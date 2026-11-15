@@ -55,6 +55,59 @@
         .severity {
             font-weight: bold;
         }
+
+        
+.analytics {
+    margin-top: 35px;
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    margin: 20px 0 35px;
+}
+
+.analytics-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 22px;
+}
+
+.analytics-card h3 {
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.analytics-card p {
+    color: #38bdf8;
+    font-size: 30px;
+    font-weight: bold;
+    margin-bottom: 0;
+}
+
+.chart-container {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 25px;
+    max-width: 650px;
+    height: 350px;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 15px;
+    }
+
+    .chart-container {
+        padding: 12px;
+        height: 280px;
+    }
+}
+
     </style>
 </head>
 
@@ -155,6 +208,8 @@
     Loading vulnerability records...
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
 <script> 
       
 let allVulnerabilities = [];
