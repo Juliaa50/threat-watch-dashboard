@@ -88,6 +88,25 @@ The objective is to demonstrate practical skills in:
 
 ## 🏗️ Project Architecture
 
+```mermaid
+flowchart TD
+    A[NIST NVD API] --> B[Python Threat Collector]
+    B --> C[CVE and CVSS Processing]
+    C --> D[vulnerabilities.json]
+
+    E[GitHub Actions] --> B
+    D --> F[GitHub Repository]
+    F --> G[GitHub Pages]
+    G --> H[Threat Watch Dashboard]
+
+    H --> I[Search and Filtering]
+    H --> J[CVSS Analytics]
+    H --> K[Severity Distribution]
+
+    L[Python Automated Tests] --> M[Code Quality]
+    N[Security Scanning] --> M
+```
+
 ```text
              NIST NVD API
                   |
