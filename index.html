@@ -93,6 +93,45 @@
     </div>
 </section>
 
+    
+<!-- Vulnerability Analytics -->
+<section class="analytics">
+
+    <h2>Threat Intelligence Overview</h2>
+
+    <div class="analytics-grid">
+
+        <div class="analytics-card">
+            <h3>Average CVSS Score</h3>
+            <p id="averageScore">--</p>
+        </div>
+
+        <div class="analytics-card">
+            <h3>Highest CVSS Score</h3>
+            <p id="highestScore">--</p>
+        </div>
+
+        <div class="analytics-card">
+            <h3>Scored Vulnerabilities</h3>
+            <p id="scoredCount">--</p>
+        </div>
+
+        <div class="analytics-card">
+            <h3>Unscored Vulnerabilities</h3>
+            <p id="unscoredCount">--</p>
+        </div>
+
+    </div>
+
+    <h2>Severity Distribution</h2>
+
+    <div class="chart-container">
+        <canvas id="severityChart"></canvas>
+    </div>
+
+</section>
+
+
 <h2>Vulnerability Explorer</h2>
 
 <input
