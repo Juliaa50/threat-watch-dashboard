@@ -68,28 +68,50 @@ def collect_vulnerabilities():
         )
 
         # Extract CVSS severity information
-        metrics = cve.get("metrics", {})
-        cvss = metrics.get("cvssMetricV31", [])
+       
+metrics = cve.get("metrics", {})
 
-        score = None
-        severity = "Unknown"
+score = None
+severity = "Unknown"
+cvss_version = "Unavailable"
 
-        if cvss:
-            score_data = cvss[0]["cvssData"]
-            score = score_data.get("baseScore")
-            severity = score_data.get(
-                "baseSeverity",
-                "Unknown"
-            )
+# Check CVSS versions in priority order
+cvss_sources = [
+    ("cvssMetricV40", "CVSS 4.0"),
+    ("cvssMetricV31", "CVSS 3.1"),
+    ("cvssMetricV30", "CVSS 3.0"),
+    ("cvssMetricV2", "CVSS 2.0")
+]
+
+for metric_key, version_name in cvss_sources:
+
+    cvss_entries = metrics.get(metric_key, [])
+
+    if cvss_entries:
+        score_data = cvss_entries[0].get("cvssData", {})
+
+        score = score_data.get("baseScore")
+
+        severity = (
+            score_data.get("baseSeverity")
+            or cvss_entries[0].get("baseSeverity")
+            or "Unknown"
+        )
+
+        cvss_version = version_name
+
+        break
+
 
         # Store vulnerability information
-        vulnerabilities.append({
-            "id": cve.get("id"),
-            "description": description,
-            "score": score,
-            "severity": severity,
-            "published": cve.get("published")
-        })
+       vulnerabilities.append({
+    "id": cve.get("id"),
+    "description": description,
+    "score": score,
+    "severity": severity,
+    "cvss_version": cvss_version,
+    "published": cve.get("published")
+})
 
     return vulnerabilities
 
