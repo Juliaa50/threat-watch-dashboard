@@ -1,29 +1,199 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cyber Threat Intelligence Dashboard</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #0f172a;
+            color: #f8fafc;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #38bdf8;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .card h2 {
+            font-size: 30px;
+            margin-bottom: 5px;
+        }
+
+        .vulnerability {
+            background: #1e293b;
+            padding: 18px;
+            margin-top: 15px;
+            border-radius: 10px;
+        }
+
+        a {
+            color: #38bdf8;
+        }
+
+        .severity {
+            font-weight: bold;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Cyber Threat Intelligence Dashboard</h1>
 
-    <p>Welcome to my cybersecurity portfolio project.</p>
+<header>
+    <h1>Cyber Threat Intelligence</h1>
+    <p>Monitoring publicly disclosed cybersecurity vulnerabilities.</p>
+    <p id="updated">Loading latest data...</p>
+</header>
 
-    <h2>Project Overview</h2>
-    <p>
-        This dashboard will monitor cybersecurity threats,
-        vulnerabilities, and security advisories.
-    </p>
+<section class="cards">
+    <div class="card">
+        <h2 id="total">--</h2>
+        <p>Total Vulnerabilities</p>
+    </div>
 
-    <h2>Technologies</h2>
-    <ul>
-        <li>Python</li>
-        <li>GitHub Actions</li>
-        <li>GitHub Pages</li>
-        <li>Cyber Threat Intelligence</li>
-    </ul>
+    <div class="card">
+        <h2 id="critical">--</h2>
+        <p>Critical</p>
+    </div>
+
+    <div class="card">
+        <h2 id="high">--</h2>
+        <p>High</p>
+    </div>
+
+    <div class="card">
+        <h2 id="medium">--</h2>
+        <p>Medium</p>
+    </div>
+
+    <div class="card">
+        <h2 id="low">--</h2>
+        <p>Low</p>
+    </div>
+</section>
+
+<h2>Recent Vulnerabilities</h2>
+
+<section id="vulnerabilities">
+    Loading vulnerability records...
+</section>
+
+<script>
+async function loadThreats() {
+    try {
+        const response = await fetch(
+            "./data/vulnerabilities.json"
+        );
+
+        if (!response.ok) {
+            throw new Error("Unable to retrieve vulnerability data");
+        }
+
+        const data = await response.json();
+        const vulnerabilities = data.vulnerabilities || [];
+
+        const counts = {
+            CRITICAL: 0,
+            HIGH: 0,
+            MEDIUM: 0,
+            LOW: 0
+        };
+
+        vulnerabilities.forEach(v => {
+            const severity = (v.severity || "").toUpperCase();
+
+            if (Object.hasOwn(counts, severity)) {
+                counts[severity]++;
+            }
+        });
+
+        document.getElementById("total").textContent =
+            data.total_vulnerabilities;
+
+        document.getElementById("critical").textContent =
+            counts.CRITICAL;
+
+        document.getElementById("high").textContent =
+            counts.HIGH;
+
+        document.getElementById("medium").textContent =
+            counts.MEDIUM;
+
+        document.getElementById("low").textContent =
+            counts.LOW;
+
+        document.getElementById("updated").textContent =
+            "Last updated: " + data.last_updated;
+
+        const container =
+            document.getElementById("vulnerabilities");
+
+        container.replaceChildren();
+
+        vulnerabilities.forEach(v => {
+            const card = document.createElement("article");
+            card.className = "vulnerability";
+
+            const heading = document.createElement("h3");
+            const link = document.createElement("a");
+
+            link.href =
+                "https://nvd.nist.gov/vuln/detail/" +
+                encodeURIComponent(v.id);
+
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = v.id || "Unknown CVE";
+
+            heading.appendChild(link);
+
+            const description = document.createElement("p");
+            description.textContent = v.description;
+
+            const severity = document.createElement("p");
+            severity.className = "severity";
+            severity.textContent =
+                "Severity: " + (v.severity || "Unknown");
+
+            const score = document.createElement("p");
+            score.textContent =
+                "CVSS Score: " +
+                (v.score ?? "Not available");
+
+            card.append(heading, description, severity, score);
+            container.appendChild(card);
+        });
+
+    } catch (error) {
+        document.getElementById("vulnerabilities").textContent =
+            "Unable to load vulnerability data: " + error.message;
+    }
+}
+
+loadThreats();
+</script>
+
 </body>
 </html>
 
