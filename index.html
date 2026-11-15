@@ -226,6 +226,8 @@ async function loadThreats() {
 
         allVulnerabilities = data.vulnerabilities || [];
 
+        updateAnalytics();
+        
         updateDashboard(data);
         renderVulnerabilities();
 
@@ -354,6 +356,129 @@ document.getElementById("severityFilter")
 
 // Load dashboard when the page is ready
 document.addEventListener("DOMContentLoaded", loadThreats);
+
+
+let severityChart = null;
+
+function updateAnalytics() {
+
+    // Keep only vulnerabilities with valid CVSS scores
+    const scored = allVulnerabilities.filter(v =>
+        typeof v.score === "number" &&
+        Number.isFinite(v.score)
+    );
+
+    const unscored = allVulnerabilities.length - scored.length;
+
+    // Calculate average CVSS score
+    const average = scored.length
+        ? scored.reduce((sum, v) => sum + v.score, 0) / scored.length
+        : null;
+
+    // Calculate highest CVSS score
+    const highest = scored.length
+        ? Math.max(...scored.map(v => v.score))
+        : null;
+
+    document.getElementById("averageScore").textContent =
+        average === null ? "N/A" : average.toFixed(1);
+
+    document.getElementById("highestScore").textContent =
+        highest === null ? "N/A" : highest.toFixed(1);
+
+    document.getElementById("scoredCount").textContent =
+        scored.length;
+
+    document.getElementById("unscoredCount").textContent =
+        unscored;
+
+    // Count vulnerability severities
+    const severityCounts = {
+        CRITICAL: 0,
+        HIGH: 0,
+        MEDIUM: 0,
+        LOW: 0,
+        UNKNOWN: 0
+    };
+
+    allVulnerabilities.forEach(v => {
+
+        const severity =
+            (v.severity || "UNKNOWN").toUpperCase();
+
+        if (Object.hasOwn(severityCounts, severity)) {
+            severityCounts[severity]++;
+        } else {
+            severityCounts.UNKNOWN++;
+        }
+    });
+
+    // Create severity distribution chart
+    const canvas = document.getElementById("severityChart");
+
+    if (!canvas || typeof Chart === "undefined") {
+        console.error("Chart.js or chart canvas is unavailable.");
+        return;
+    }
+
+    if (severityChart) {
+        severityChart.destroy();
+    }
+
+    severityChart = new Chart(canvas, {
+        type: "doughnut",
+
+        data: {
+            labels: [
+                "Critical",
+                "High",
+                "Medium",
+                "Low",
+                "Unknown"
+            ],
+
+            datasets: [{
+                data: [
+                    severityCounts.CRITICAL,
+                    severityCounts.HIGH,
+                    severityCounts.MEDIUM,
+                    severityCounts.LOW,
+                    severityCounts.UNKNOWN
+                ],
+
+                backgroundColor: [
+                    "#ef4444",
+                    "#f97316",
+                    "#eab308",
+                    "#22c55e",
+                    "#64748b"
+                ],
+
+                borderWidth: 2,
+                borderColor: "#1e293b"
+            }]
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            plugins: {
+                legend: {
+                    position: "bottom",
+                    labels: {
+                        color: "#f8fafc",
+                        padding: 20
+                    }
+                },
+
+                tooltip: {
+                    enabled: true
+                }
+            }
+        }
+    });
+}
 
 </script>
 
