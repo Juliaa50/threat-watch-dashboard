@@ -93,7 +93,24 @@
     </div>
 </section>
 
-<h2>Recent Vulnerabilities</h2>
+<h2>Vulnerability Explorer</h2>
+
+<input
+    type="text"
+    id="searchInput"
+    placeholder="Search CVE ID or description..."
+>
+
+<select id="severityFilter">
+    <option value="ALL">All Severities</option>
+    <option value="CRITICAL">Critical</option>
+    <option value="HIGH">High</option>
+    <option value="MEDIUM">Medium</option>
+    <option value="LOW">Low</option>
+    <option value="UNKNOWN">Unknown</option>
+</select>
+
+<h3 id="resultCount"></h3>
 
 <section id="vulnerabilities">
     Loading vulnerability records...
