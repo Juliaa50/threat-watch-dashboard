@@ -108,6 +108,65 @@
     }
 }
 
+
+#searchInput,
+#severityFilter,
+#sortOrder,
+.date-filters input {
+    padding: 12px;
+    margin: 8px 5px 8px 0;
+    border-radius: 7px;
+    border: 1px solid #475569;
+    background: #1e293b;
+    color: #f8fafc;
+    max-width: 100%;
+}
+
+.date-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 15px 0;
+}
+
+.date-filters label {
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.severity-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.severity-critical {
+    background: #7f1d1d;
+    color: #fecaca;
+}
+
+.severity-high {
+    background: #7c2d12;
+    color: #fed7aa;
+}
+
+.severity-medium {
+    background: #713f12;
+    color: #fef08a;
+}
+
+.severity-low {
+    background: #14532d;
+    color: #bbf7d0;
+}
+
+.severity-unknown {
+    background: #334155;
+    color: #cbd5e1;
+}
     </style>
 </head>
 
@@ -201,6 +260,22 @@
     <option value="LOW">Low</option>
     <option value="UNKNOWN">Unknown</option>
 </select>
+    
+<select id="sortOrder">
+    <option value="highest">Highest CVSS Score First</option>
+    <option value="lowest">Lowest CVSS Score First</option>
+    <option value="newest">Newest Vulnerabilities</option>
+    <option value="oldest">Oldest Vulnerabilities</option>
+</select>
+
+<div class="date-filters">
+    <label for="startDate">Published from:</label>
+    <input type="date" id="startDate">
+
+    <label for="endDate">Published to:</label>
+    <input type="date" id="endDate">
+</div>
+
 
 <h3 id="resultCount"></h3>
 
@@ -277,6 +352,7 @@ function updateDashboard(data) {
 }
 
 
+
 function renderVulnerabilities() {
 
     const searchTerm =
@@ -285,10 +361,22 @@ function renderVulnerabilities() {
     const selectedSeverity =
         document.getElementById("severityFilter").value;
 
+    const sortOrder =
+        document.getElementById("sortOrder").value;
+
+    const startDate =
+        document.getElementById("startDate").value;
+
+    const endDate =
+        document.getElementById("endDate").value;
+
     const filtered = allVulnerabilities.filter(v => {
 
         const severity =
             (v.severity || "UNKNOWN").toUpperCase();
+
+        const publishedDate =
+            v.published ? v.published.slice(0, 10) : "";
 
         const matchesSearch =
             (v.id || "").toLowerCase().includes(searchTerm) ||
@@ -298,7 +386,43 @@ function renderVulnerabilities() {
             selectedSeverity === "ALL" ||
             severity === selectedSeverity;
 
-        return matchesSearch && matchesSeverity;
+        const matchesStartDate =
+            !startDate ||
+            (publishedDate && publishedDate >= startDate);
+
+        const matchesEndDate =
+            !endDate ||
+            (publishedDate && publishedDate <= endDate);
+
+        return matchesSearch &&
+            matchesSeverity &&
+            matchesStartDate &&
+            matchesEndDate;
+    });
+
+    // Sort filtered vulnerabilities
+    filtered.sort((a, b) => {
+
+        if (sortOrder === "highest") {
+            return (b.score ?? -1) - (a.score ?? -1);
+        }
+
+        if (sortOrder === "lowest") {
+            return (a.score ?? Infinity) - (b.score ?? Infinity);
+        }
+
+        const dateA = a.published || "";
+        const dateB = b.published || "";
+
+        if (sortOrder === "newest") {
+            return dateB.localeCompare(dateA);
+        }
+
+        if (sortOrder === "oldest") {
+            return dateA.localeCompare(dateB);
+        }
+
+        return 0;
     });
 
     const container =
@@ -325,30 +449,62 @@ function renderVulnerabilities() {
         heading.appendChild(link);
 
         const description = document.createElement("p");
-        description.textContent = v.description || "No description available";
+        description.textContent =
+            v.description || "No description available";
 
-        const severity = document.createElement("p");
+        const severityValue =
+            (v.severity || "UNKNOWN").toLowerCase();
+
+        const severity = document.createElement("span");
+
+        severity.className =
+            "severity-badge severity-" + severityValue;
+
         severity.textContent =
-            "Severity: " + (v.severity || "Unknown");
+            (v.severity || "Unknown").toUpperCase();
+
+        const severityLine = document.createElement("p");
+        severityLine.appendChild(severity);
 
         const score = document.createElement("p");
         score.textContent =
             "CVSS Score: " + (v.score ?? "Not available");
 
-        card.append(heading, description, severity, score);
+        const published = document.createElement("p");
+        published.textContent =
+            "Published: " +
+            (v.published || "Unknown");
+
+        card.append(
+            heading,
+            description,
+            severityLine,
+            score,
+            published
+        );
 
         container.appendChild(card);
     });
 
     document.getElementById("resultCount").textContent =
-        "Showing " + filtered.length + " of " +
-        allVulnerabilities.length + " vulnerabilities";
+        "Showing " + filtered.length +
+        " of " + allVulnerabilities.length +
+        " vulnerabilities";
 }
 
 
 // Connect search and filter controls
 document.getElementById("searchInput")
     .addEventListener("input", renderVulnerabilities);
+
+    document.getElementById("sortOrder")
+    .addEventListener("change", renderVulnerabilities);
+
+document.getElementById("startDate")
+    .addEventListener("change", renderVulnerabilities);
+
+document.getElementById("endDate")
+    .addEventListener("change", renderVulnerabilities);
 
 document.getElementById("severityFilter")
     .addEventListener("change", renderVulnerabilities);
