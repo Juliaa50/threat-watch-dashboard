@@ -2,24 +2,31 @@
 import json
 import requests
 
+from pathlib import Path
+from datetime import datetime, timezone
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from datetime import datetime, timezone
-from pathlib import Path
 
 
-# Project directories
+# ==========================================
+# PROJECT CONFIGURATION
+# ==========================================
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
 DATA_DIR = PROJECT_ROOT / "data"
+
 OUTPUT_FILE = DATA_DIR / "vulnerabilities.json"
 
-# NIST National Vulnerability Database API
 NVD_API = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 
 
-def collect_vulnerabilities():
+# ==========================================
+# CREATE HTTP SESSION WITH AUTOMATIC RETRIES
+# ==========================================
 
-    # Configure automatic retries for temporary API failures
+def create_session():
+
     retry_strategy = Retry(
         total=5,
         backoff_factor=2,
@@ -31,13 +38,25 @@ def collect_vulnerabilities():
     session = requests.Session()
 
     adapter = HTTPAdapter(max_retries=retry_strategy)
+
     session.mount("https://", adapter)
+
+    return session
+
+
+# ==========================================
+# COLLECT VULNERABILITIES FROM NIST
+# ==========================================
+
+def collect_vulnerabilities():
+
+    print("Connecting to NIST vulnerability database...")
+
+    session = create_session()
 
     params = {
         "resultsPerPage": 20
     }
-
-    print("Connecting to NIST vulnerability database...")
 
     response = session.get(
         NVD_API,
@@ -51,11 +70,16 @@ def collect_vulnerabilities():
 
     vulnerabilities = []
 
+    print("Processing vulnerability records...")
+
     for record in records:
 
         cve = record.get("cve", {})
 
-        # Extract English vulnerability description
+        # Extract vulnerability ID
+        cve_id = cve.get("id")
+
+        # Extract English description
         descriptions = cve.get("descriptions", [])
 
         description = next(
@@ -67,81 +91,113 @@ def collect_vulnerabilities():
             "No description available"
         )
 
-        # Extract CVSS severity information
-       
-metrics = cve.get("metrics", {})
+        # Extract CVSS information
+        metrics = cve.get("metrics", {})
 
-score = None
-severity = "Unknown"
-cvss_version = "Unavailable"
+        score = None
+        severity = "Unknown"
+        cvss_version = "Unavailable"
 
-# Check CVSS versions in priority order
-cvss_sources = [
-    ("cvssMetricV40", "CVSS 4.0"),
-    ("cvssMetricV31", "CVSS 3.1"),
-    ("cvssMetricV30", "CVSS 3.0"),
-    ("cvssMetricV2", "CVSS 2.0")
-]
+        # Check supported CVSS versions
+        cvss_sources = [
+            ("cvssMetricV40", "CVSS 4.0"),
+            ("cvssMetricV31", "CVSS 3.1"),
+            ("cvssMetricV30", "CVSS 3.0"),
+            ("cvssMetricV2", "CVSS 2.0")
+        ]
 
-for metric_key, version_name in cvss_sources:
+        for metric_key, version_name in cvss_sources:
 
-    cvss_entries = metrics.get(metric_key, [])
+            cvss_entries = metrics.get(metric_key, [])
 
-    if cvss_entries:
-        score_data = cvss_entries[0].get("cvssData", {})
+            if cvss_entries:
 
-        score = score_data.get("baseScore")
+                score_data = cvss_entries[0].get(
+                    "cvssData", {}
+                )
 
-        severity = (
-            score_data.get("baseSeverity")
-            or cvss_entries[0].get("baseSeverity")
-            or "Unknown"
-        )
+                score = score_data.get("baseScore")
 
-        cvss_version = version_name
+                severity = (
+                    score_data.get("baseSeverity")
+                    or cvss_entries[0].get("baseSeverity")
+                    or "Unknown"
+                )
 
-        break
+                cvss_version = version_name
 
+                break
 
         # Store vulnerability information
-       vulnerabilities.append({
-    "id": cve.get("id"),
-    "description": description,
-    "score": score,
-    "severity": severity,
-    "cvss_version": cvss_version,
-    "published": cve.get("published")
-})
+        vulnerabilities.append({
+            "id": cve_id,
+            "description": description,
+            "score": score,
+            "severity": severity,
+            "cvss_version": cvss_version,
+            "published": cve.get("published")
+        })
 
     return vulnerabilities
 
 
+# ==========================================
+# GENERATE JSON VULNERABILITY REPORT
+# ==========================================
+
 def generate_report():
 
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    print("Starting vulnerability report generation...")
+
+    DATA_DIR.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
+    vulnerabilities = collect_vulnerabilities()
 
     report = {
         "project": "Cyber Threat Intelligence",
-        "last_updated": datetime.now(timezone.utc).isoformat(),
-        "total_vulnerabilities": 0,
-        "vulnerabilities": []
+        "last_updated": datetime.now(
+            timezone.utc
+        ).isoformat(),
+        "total_vulnerabilities": len(vulnerabilities),
+        "vulnerabilities": vulnerabilities
     }
 
-    # Collect vulnerability information
-    report["vulnerabilities"] = collect_vulnerabilities()
+    with OUTPUT_FILE.open(
+        "w",
+        encoding="utf-8"
+    ) as file:
 
-    report["total_vulnerabilities"] = len(
-        report["vulnerabilities"]
-    )
+        json.dump(
+            report,
+            file,
+            indent=4
+        )
 
-    # Save report as JSON
-    with OUTPUT_FILE.open("w", encoding="utf-8") as file:
-        json.dump(report, file, indent=4)
+    print("----------------------------------")
+    print("Vulnerability report generated!")
+    print("Total records:", len(vulnerabilities))
+    print("Output file:", OUTPUT_FILE)
+    print("----------------------------------")
 
-    print("Vulnerability report generated.")
-    print("Total records:", report["total_vulnerabilities"])
-    print("Saved to:", OUTPUT_FILE)
 
+# ==========================================
+# MAIN EXECUTION
+# ==========================================
 
 if __name__ == "__main__":
-    generate_report()
+
+    try:
+        generate_report()
+
+    except requests.exceptions.RequestException as error:
+
+        print("NIST API request failed:", error)
+        raise
+
+    except (ValueError, OSError) as error:
+
+        print("Report generation failed:", error)
+        raise
