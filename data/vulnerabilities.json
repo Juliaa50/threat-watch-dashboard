@@ -1,0 +1,147 @@
+{
+    "project": "Cyber Threat Intelligence",
+    "last_updated": "2026-11-15T04:00:37.812065+00:00",
+    "total_vulnerabilities": 20,
+    "vulnerabilities": [
+        {
+            "id": "CVE-1999-0095",
+            "description": "The debug command in Sendmail is enabled, allowing attackers to execute commands as root.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1988-10-01T04:00:00.000"
+        },
+        {
+            "id": "CVE-1999-0082",
+            "description": "CWD ~root command in ftpd allows root access.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1988-11-11T05:00:00.000"
+        },
+        {
+            "id": "CVE-1999-1471",
+            "description": "Buffer overflow in passwd in BSD based operating systems 4.3 and earlier allows local users to gain root privileges by specifying a long shell or GECOS field.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1989-01-01T05:00:00.000"
+        },
+        {
+            "id": "CVE-1999-1122",
+            "description": "Vulnerability in restore in SunOS 4.0.3 and earlier allows local users to gain privileges.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1989-07-26T04:00:00.000"
+        },
+        {
+            "id": "CVE-1999-1467",
+            "description": "Vulnerability in rcp on SunOS 4.0.x allows remote attackers from trusted hosts to execute arbitrary commands as root, possibly related to the configuration of the nobody user.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1989-10-26T04:00:00.000"
+        },
+        {
+            "id": "CVE-1999-1506",
+            "description": "Vulnerability in SMI Sendmail 4.0 and earlier, on SunOS up to 4.0.3, allows remote attackers to access user bin.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1990-01-29T05:00:00.000"
+        },
+        {
+            "id": "CVE-1999-0084",
+            "description": "Certain NFS servers allow users to use mknod to gain privileges by creating a writable kmem device and setting the UID to 0.",
+            "score": 8.4,
+            "severity": "HIGH",
+            "published": "1990-05-01T04:00:00.000"
+        },
+        {
+            "id": "CVE-2000-0388",
+            "description": "Buffer overflow in FreeBSD libmytinfo library allows local users to execute commands via a long TERMCAP environmental variable.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1990-05-09T04:00:00.000"
+        },
+        {
+            "id": "CVE-1999-0209",
+            "description": "The SunView (SunTools) selection_svc facility allows remote users to read files.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1990-08-14T04:00:00.000"
+        },
+        {
+            "id": "CVE-1999-1198",
+            "description": "BuildDisk program on NeXT systems before 2.0 does not prompt users for the root password, which allows local users to gain root privileges.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1990-10-03T04:00:00.000"
+        },
+        {
+            "id": "CVE-1999-1391",
+            "description": "Vulnerability in NeXT 1.0a and 1.0 with publicly accessible printers allows local users to gain privileges via a combination of the npd program and weak directory permissions.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1990-10-03T04:00:00.000"
+        },
+        {
+            "id": "CVE-1999-1392",
+            "description": "Vulnerability in restore0.9 installation script in NeXT 1.0a and 1.0 allows local users to gain root privileges.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1990-10-03T04:00:00.000"
+        },
+        {
+            "id": "CVE-1999-1057",
+            "description": "VMS 4.0 through 5.3 allows local users to gain privileges via the ANALYZE/PROCESS_DUMP dcl command.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1990-10-25T04:00:00.000"
+        },
+        {
+            "id": "CVE-1999-1554",
+            "description": "/usr/sbin/Mail on SGI IRIX 3.3 and 3.3.1 does not properly set the group ID to the group ID of the user who started Mail, which allows local users to read the mail of other users.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1990-10-31T05:00:00.000"
+        },
+        {
+            "id": "CVE-1999-1197",
+            "description": "TIOCCONS in SunOS 4.1.1 does not properly check the permissions of a user who tries to redirect console output and input, which could allow a local user to gain privileges.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1990-12-20T05:00:00.000"
+        },
+        {
+            "id": "CVE-1999-1115",
+            "description": "Vulnerability in the /etc/suid_exec program in HP Apollo Domain/OS sr10.2 and sr10.3 beta, related to the Korn Shell (ksh).",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1990-12-31T05:00:00.000"
+        },
+        {
+            "id": "CVE-1999-1258",
+            "description": "rpc.pwdauthd in SunOS 4.1.1 and earlier does not properly prevent remote access to the daemon, which allows remote attackers to obtain sensitive system information.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1991-01-15T05:00:00.000"
+        },
+        {
+            "id": "CVE-1999-1438",
+            "description": "Vulnerability in /bin/mail in SunOS 4.1.1 and earlier allows local users to gain root privileges via certain command line arguments.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1991-02-22T05:00:00.000"
+        },
+        {
+            "id": "CVE-1999-1211",
+            "description": "Vulnerability in in.telnetd in SunOS 4.1.1 and earlier allows local users to gain root privileges.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1991-03-27T05:00:00.000"
+        },
+        {
+            "id": "CVE-1999-1212",
+            "description": "Vulnerability in in.rlogind in SunOS 4.0.3 and 4.0.3c allows local users to gain root privileges.",
+            "score": null,
+            "severity": "Unknown",
+            "published": "1991-03-27T05:00:00.000"
+        }
+    ]
+}
