@@ -116,99 +116,151 @@
     Loading vulnerability records...
 </section>
 
-<script>
+<script> 
+      
+let allVulnerabilities = [];
+
 async function loadThreats() {
     try {
-        const response = await fetch(
-            "./data/vulnerabilities.json"
-        );
+        const response = await fetch("./data/vulnerabilities.json");
 
         if (!response.ok) {
-            throw new Error("Unable to retrieve vulnerability data");
+            throw new Error("Unable to load vulnerability data");
         }
 
         const data = await response.json();
-        const vulnerabilities = data.vulnerabilities || [];
 
-        const counts = {
-            CRITICAL: 0,
-            HIGH: 0,
-            MEDIUM: 0,
-            LOW: 0
-        };
+        allVulnerabilities = data.vulnerabilities || [];
 
-        vulnerabilities.forEach(v => {
-            const severity = (v.severity || "").toUpperCase();
-
-            if (Object.hasOwn(counts, severity)) {
-                counts[severity]++;
-            }
-        });
-
-        document.getElementById("total").textContent =
-            data.total_vulnerabilities;
-
-        document.getElementById("critical").textContent =
-            counts.CRITICAL;
-
-        document.getElementById("high").textContent =
-            counts.HIGH;
-
-        document.getElementById("medium").textContent =
-            counts.MEDIUM;
-
-        document.getElementById("low").textContent =
-            counts.LOW;
+        updateDashboard(data);
+        renderVulnerabilities();
 
         document.getElementById("updated").textContent =
             "Last updated: " + data.last_updated;
 
-        const container =
-            document.getElementById("vulnerabilities");
-
-        container.replaceChildren();
-
-        vulnerabilities.forEach(v => {
-            const card = document.createElement("article");
-            card.className = "vulnerability";
-
-            const heading = document.createElement("h3");
-            const link = document.createElement("a");
-
-            link.href =
-                "https://nvd.nist.gov/vuln/detail/" +
-                encodeURIComponent(v.id);
-
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
-            link.textContent = v.id || "Unknown CVE";
-
-            heading.appendChild(link);
-
-            const description = document.createElement("p");
-            description.textContent = v.description;
-
-            const severity = document.createElement("p");
-            severity.className = "severity";
-            severity.textContent =
-                "Severity: " + (v.severity || "Unknown");
-
-            const score = document.createElement("p");
-            score.textContent =
-                "CVSS Score: " +
-                (v.score ?? "Not available");
-
-            card.append(heading, description, severity, score);
-            container.appendChild(card);
-        });
-
     } catch (error) {
+        console.error("Dashboard error:", error);
+
         document.getElementById("vulnerabilities").textContent =
-            "Unable to load vulnerability data: " + error.message;
+            "Unable to load vulnerability data.";
     }
 }
 
-loadThreats();
+
+function updateDashboard(data) {
+
+    const counts = {
+        CRITICAL: 0,
+        HIGH: 0,
+        MEDIUM: 0,
+        LOW: 0
+    };
+
+    allVulnerabilities.forEach(v => {
+        const severity = (v.severity || "UNKNOWN").toUpperCase();
+
+        if (Object.hasOwn(counts, severity)) {
+            counts[severity]++;
+        }
+    });
+
+    document.getElementById("total").textContent =
+        allVulnerabilities.length;
+
+    document.getElementById("critical").textContent =
+        counts.CRITICAL;
+
+    document.getElementById("high").textContent =
+        counts.HIGH;
+
+    document.getElementById("medium").textContent =
+        counts.MEDIUM;
+
+    document.getElementById("low").textContent =
+        counts.LOW;
+}
+
+
+function renderVulnerabilities() {
+
+    const searchTerm =
+        document.getElementById("searchInput").value.toLowerCase();
+
+    const selectedSeverity =
+        document.getElementById("severityFilter").value;
+
+    const filtered = allVulnerabilities.filter(v => {
+
+        const severity =
+            (v.severity || "UNKNOWN").toUpperCase();
+
+        const matchesSearch =
+            (v.id || "").toLowerCase().includes(searchTerm) ||
+            (v.description || "").toLowerCase().includes(searchTerm);
+
+        const matchesSeverity =
+            selectedSeverity === "ALL" ||
+            severity === selectedSeverity;
+
+        return matchesSearch && matchesSeverity;
+    });
+
+    const container =
+        document.getElementById("vulnerabilities");
+
+    container.replaceChildren();
+
+    filtered.forEach(v => {
+
+        const card = document.createElement("article");
+        card.className = "vulnerability";
+
+        const heading = document.createElement("h3");
+        const link = document.createElement("a");
+
+        link.href =
+            "https://nvd.nist.gov/vuln/detail/" +
+            encodeURIComponent(v.id);
+
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = v.id || "Unknown CVE";
+
+        heading.appendChild(link);
+
+        const description = document.createElement("p");
+        description.textContent = v.description || "No description available";
+
+        const severity = document.createElement("p");
+        severity.textContent =
+            "Severity: " + (v.severity || "Unknown");
+
+        const score = document.createElement("p");
+        score.textContent =
+            "CVSS Score: " + (v.score ?? "Not available");
+
+        card.append(heading, description, severity, score);
+
+        container.appendChild(card);
+    });
+
+    document.getElementById("resultCount").textContent =
+        "Showing " + filtered.length + " of " +
+        allVulnerabilities.length + " vulnerabilities";
+}
+
+
+// Connect search and filter controls
+document.getElementById("searchInput")
+    .addEventListener("input", renderVulnerabilities);
+
+document.getElementById("severityFilter")
+    .addEventListener("change", renderVulnerabilities);
+
+
+// Load dashboard when the page is ready
+document.addEventListener("DOMContentLoaded", loadThreats);
+
 </script>
 
 </body>
