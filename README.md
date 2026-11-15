@@ -133,6 +133,19 @@ flowchart TD
 
 ---
 
+## 📸 Dashboard Screenshots
+
+### Dashboard Overview
+
+![Threat Watch Dashboard](screenshots/dashboard-overview.png)
+
+### Vulnerability Management
+
+![Vulnerability Records](screenshots/vulnerability-list.png)
+
+
+---
+
 ## 📂 Repository Structure
 
 ```text
